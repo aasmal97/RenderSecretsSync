@@ -1,6 +1,6 @@
-name: HashiCorp Vault Secrets
+name: Render Secrets Sync
 author: Arky Asmal
-description: Access secrets stored on HashiCorp Vault Secrets, in the HashiCorp Cloud Platform.
+description: Update secrets on a Render Service, programmatically
 branding:
   icon: "briefcase"
   color: "black"
