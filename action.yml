@@ -1,0 +1,26 @@
+name: HashiCorp Vault Secrets
+author: Arky Asmal
+description: Access secrets stored on HashiCorp Vault Secrets, in the HashiCorp Cloud Platform.
+branding:
+  icon: "briefcase"
+  color: "black"
+inputs:
+  ENV_FILE_PATH:
+    default: ""
+    description: The file path to the .env file that we will read to update render on
+    required: true
+  RENDER_API_KEY:
+    default: ""
+    description: Render API key, which we will use to make requests to Render
+    required: true
+  RENDER_SERVICE_NAME:
+    default: ""
+    description: Render service name, that identifies the service we will target, to update secrets on. This must be unique! If you have more than one service that shares the same name, the change will occur on the first one found.
+    required: true
+  DELETE_ALL_NOT_IN_ENV:
+    default: "false"
+    description: Delete all secrets not found in the .env file.
+    required: false
+runs:
+  using: "node20"
+  main: "dist/action/index.js"
