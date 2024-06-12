@@ -110,11 +110,12 @@ const main = async () => {
       deleteAllNotInEnv,
     });
     if (!bodyArr) return;
-    await updateServiceSecretsAsync({
-      serviceId,
-      renderApiKey,
-      body: bodyArr,
-    });
+    core.info(JSON.stringify(bodyArr))
+    // await updateServiceSecretsAsync({
+    //   serviceId,
+    //   renderApiKey,
+    //   body: bodyArr,
+    // });
     core.info(`Updated Service: ${service.service.name}`);
   }
 };

@@ -9,16 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: "Test HashiCorp Vault Secrets ALL_SECRETS"
+      - name: "Test Delete All Not In Env"
         uses: ./
         with: 
-          CLIENT_ID: ${{secrets.CLIENT_ID}}
-          CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
-          APP_NAME: ${{secrets.APP_NAME}}
-          PROJECT_NAME: ${{secrets.PROJECT_NAME}}
-          ORGANIZATION_NAME: ${{secrets.ORGANIZATION_NAME}}
-          GENERATE_ENV: test
-          ALL_SECRETS: true 
-      - name: "Test if env is present"
-        shell: bash
-        run: ls
+          ENV_FILE_PATH: "./.env"
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_NAME: ${{ secrets.RENDER_SERVICE_NAME }}
+          DELETE_ALL_NOT_IN_ENV: true 

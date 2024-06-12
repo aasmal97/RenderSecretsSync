@@ -12,13 +12,6 @@ jobs:
       - name: "Test HashiCorp Vault Secrets Script"
         uses: ./
         with: 
-          CLIENT_ID: ${{secrets.CLIENT_ID}}
-          CLIENT_SECRET: ${{secrets.CLIENT_SECRET}}
-          APP_NAME: ${{secrets.APP_NAME}}
-          PROJECT_NAME: ${{secrets.PROJECT_NAME}}
-          SECRET_NAMES: ${{secrets.SECRET_NAMES}}
-          ORGANIZATION_NAME: ${{secrets.ORGANIZATION_NAME}}
-          GENERATE_ENV: test
-      - name: "Test if env is present"
-        shell: bash
-        run: ls
+          ENV_FILE_PATH: "./.env"
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_NAME: ${{ secrets.RENDER_SERVICE_NAME }}
