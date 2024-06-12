@@ -80,7 +80,9 @@ const getNewBody = async ({
   const currSecretsArr = getAllCurrentSecrets.map(
     (secret): [string, string] => [secret.envVar.key, secret.envVar.value]
   );
-  const allArrs = [...currSecretsArr, ...newSecrets];
+  const allArrs = [...currSecretsArr, ...newSecrets].map(([key, value]) => ({
+    [key]: value,
+  }));
   const allSecretsObj: Record<string, string> = Object.assign({}, ...allArrs);
   const newBodyArr = Object.entries(allSecretsObj).map(([key, value]) => ({
     key,
@@ -94,29 +96,28 @@ const main = async () => {
   const { envFilePath, renderApiKey, renderServiceName, deleteAllNotInEnv } =
     data;
   const services = await getServiceAsync({ renderServiceName, renderApiKey });
-  // if (!services) return;
-  // const newSecrets = await readEnvFileAsync({ envFilePath });
-  // if (!newSecrets) return;
-  // core.info("Secrets Parsed");
-  // for (let service of services) {
-  //   //we use this try to reduce rate-limit errors
-  //   await delay(1000);
-  //   core.info(`Updating Service: ${service.service.name}`);
-  //   const serviceId = service.service.id;
-  //   const bodyArr = await getNewBody({
-  //     serviceId,
-  //     renderApiKey,
-  //     newSecrets,
-  //     deleteAllNotInEnv,
-  //   });
-  //   if (!bodyArr) return;
-  //   core.info(JSON.stringify(bodyArr))
-  //   // await updateServiceSecretsAsync({
-  //   //   serviceId,
-  //   //   renderApiKey,
-  //   //   body: bodyArr,
-  //   // });
-  //   core.info(`Updated Service: ${service.service.name}`);
-  // }
+  if (!services) return;
+  const newSecrets = await readEnvFileAsync({ envFilePath });
+  if (!newSecrets) return;
+  core.info("Secrets Parsed");
+  for (let service of services) {
+    //we use this try to reduce rate-limit errors
+    await delay(1000);
+    core.info(`Updating Service: ${service.service.name}`);
+    const serviceId = service.service.id;
+    const bodyArr = await getNewBody({
+      serviceId,
+      renderApiKey,
+      newSecrets,
+      deleteAllNotInEnv,
+    });
+    if (!bodyArr) return;
+    // await updateServiceSecretsAsync({
+    //   serviceId,
+    //   renderApiKey,
+    //   body: bodyArr,
+    // });
+    core.info(`Updated Service: ${service.service.name}`);
+  }
 };
 main();

@@ -519,7 +519,7 @@ var require_file_command = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.prepareKeyValueMessage = exports2.issueFileCommand = void 0;
-    var fs = __importStar(require("fs"));
+    var fs2 = __importStar(require("fs"));
     var os = __importStar(require("os"));
     var uuid_1 = (init_esm_node(), __toCommonJS(esm_node_exports));
     var utils_1 = require_utils();
@@ -528,10 +528,10 @@ var require_file_command = __commonJS({
       if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
       }
-      if (!fs.existsSync(filePath)) {
+      if (!fs2.existsSync(filePath)) {
         throw new Error(`Missing file at path: ${filePath}`);
       }
-      fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+      fs2.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
         encoding: "utf8"
       });
     }
@@ -28138,7 +28138,7 @@ var require_form_data = __commonJS({
     var http2 = require("http");
     var https2 = require("https");
     var parseUrl = require("url").parse;
-    var fs = require("fs");
+    var fs2 = require("fs");
     var Stream = require("stream").Stream;
     var mime = require_mime_types();
     var asynckit = require_asynckit();
@@ -28203,7 +28203,7 @@ var require_form_data = __commonJS({
         if (value.end != void 0 && value.end != Infinity && value.start != void 0) {
           callback(null, value.end + 1 - (value.start ? value.start : 0));
         } else {
-          fs.stat(value.path, function(err, stat) {
+          fs2.stat(value.path, function(err, stat) {
             var fileSize;
             if (err) {
               callback(err);
@@ -29094,7 +29094,7 @@ var require_package = __commonJS({
 // node_modules/dotenv/lib/main.js
 var require_main2 = __commonJS({
   "node_modules/dotenv/lib/main.js"(exports2, module2) {
-    var fs = require("fs");
+    var fs2 = require("fs");
     var path = require("path");
     var os = require("os");
     var crypto4 = require("crypto");
@@ -29201,7 +29201,7 @@ var require_main2 = __commonJS({
       if (options && options.path && options.path.length > 0) {
         if (Array.isArray(options.path)) {
           for (const filepath of options.path) {
-            if (fs.existsSync(filepath)) {
+            if (fs2.existsSync(filepath)) {
               possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
             }
           }
@@ -29211,7 +29211,7 @@ var require_main2 = __commonJS({
       } else {
         possibleVaultPath = path.resolve(process.cwd(), ".env.vault");
       }
-      if (fs.existsSync(possibleVaultPath)) {
+      if (fs2.existsSync(possibleVaultPath)) {
         return possibleVaultPath;
       }
       return null;
@@ -29255,7 +29255,7 @@ var require_main2 = __commonJS({
       const parsedAll = {};
       for (const path2 of optionPaths) {
         try {
-          const parsed = DotenvModule.parse(fs.readFileSync(path2, { encoding }));
+          const parsed = DotenvModule.parse(fs2.readFileSync(path2, { encoding }));
           DotenvModule.populate(parsedAll, parsed, options);
         } catch (e) {
           if (debug) {
@@ -36705,6 +36705,7 @@ var axiosClient = (RENDER_API_KEY) => axios_default.create({
 // action/helpers.ts
 var core = __toESM(require_core());
 var dotenv = __toESM(require_main2());
+var fs = __toESM(require("fs/promises"));
 var asyncHandler = (params, func) => {
   try {
     return func(params);
@@ -36714,6 +36715,9 @@ var asyncHandler = (params, func) => {
     return null;
   }
 };
+function delay(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
 var getService = async ({
   renderApiKey,
   renderServiceName,
@@ -36730,6 +36734,48 @@ var getService = async ({
   return service.data;
 };
 var getServiceAsync = async (e) => await asyncHandler(e, getService);
+var readEnvFile = async ({ envFilePath }) => {
+  const env = dotenv.parse(await fs.readFile(envFilePath));
+  const result = Object.entries(env).map(([key, value]) => [
+    key,
+    value
+  ]);
+  return result;
+};
+var readEnvFileAsync = async (e) => await asyncHandler(e, readEnvFile);
+var retrieveSecrets = async ({
+  serviceId,
+  renderApiKey,
+  cursor
+}) => {
+  const client = axiosClient(renderApiKey);
+  const secrets = await client.get(`/services/${serviceId}/env-vars`, {
+    params: {
+      cursor,
+      limit: 100
+    }
+  });
+  return secrets.data;
+};
+var retrieveSecretsAsync = async (e) => await asyncHandler(e, retrieveSecrets);
+var retrieveAllSecrets = async (e) => {
+  const secrets = [];
+  let newData = void 0;
+  while (newData !== null) {
+    await delay(1e3);
+    newData = await retrieveSecretsAsync({
+      ...e,
+      cursor: newData ? newData[newData.length - 1].cursor : void 0
+    });
+    if (!newData)
+      return secrets;
+    secrets.push(...newData);
+    if (newData.length <= 0)
+      return secrets;
+  }
+  return secrets;
+};
+var retrieveAllSecretsAsync = async (e) => await asyncHandler(e, retrieveAllSecrets);
 
 // action/index.ts
 var import_zod = __toESM(require_lib2());
@@ -36779,12 +36825,64 @@ var getInputs = () => {
   core2.info("Inputs Parsed");
   return paramsValidationResult.data;
 };
+var getNewBody = async ({
+  renderApiKey,
+  serviceId,
+  newSecrets,
+  deleteAllNotInEnv
+}) => {
+  if (deleteAllNotInEnv) {
+    return newSecrets.map(([key, value]) => ({
+      key,
+      value
+    }));
+  }
+  const getAllCurrentSecrets = await retrieveAllSecretsAsync({
+    serviceId,
+    renderApiKey
+  });
+  if (!getAllCurrentSecrets)
+    return null;
+  const currSecretsArr = getAllCurrentSecrets.map(
+    (secret) => [secret.envVar.key, secret.envVar.value]
+  );
+  const allArrs = [...currSecretsArr, ...newSecrets].map(([key, value]) => ({
+    [key]: value
+  }));
+  const allSecretsObj = Object.assign({}, ...allArrs);
+  const newBodyArr = Object.entries(allSecretsObj).map(([key, value]) => ({
+    key,
+    value
+  }));
+  return newBodyArr;
+};
 var main = async () => {
   const data = getInputs();
   if (data instanceof Error)
     return;
   const { envFilePath, renderApiKey, renderServiceName, deleteAllNotInEnv } = data;
   const services = await getServiceAsync({ renderServiceName, renderApiKey });
+  if (!services)
+    return;
+  const newSecrets = await readEnvFileAsync({ envFilePath });
+  if (!newSecrets)
+    return;
+  core2.info("Secrets Parsed");
+  for (let service of services) {
+    await delay(1e3);
+    core2.info(`Updating Service: ${service.service.name}`);
+    const serviceId = service.service.id;
+    const bodyArr = await getNewBody({
+      serviceId,
+      renderApiKey,
+      newSecrets,
+      deleteAllNotInEnv
+    });
+    if (!bodyArr)
+      return;
+    core2.info(JSON.stringify(bodyArr));
+    core2.info(`Updated Service: ${service.service.name}`);
+  }
 };
 main();
 // Annotate the CommonJS export names for ESM import in node:
