@@ -1,4 +1,3 @@
-import { z } from "zod";
 import * as core from "@actions/core";
 import {
   delay,
@@ -7,6 +6,7 @@ import {
   retrieveAllSecretsAsync,
   updateServiceSecretsAsync,
 } from "./helpers";
+import { z } from "zod";
 export const ActionSchema = z.object({
   envFilePath: z.string({
     required_error: "ENV_FILE_PATH is required",
@@ -94,29 +94,29 @@ const main = async () => {
   const { envFilePath, renderApiKey, renderServiceName, deleteAllNotInEnv } =
     data;
   const services = await getServiceAsync({ renderServiceName, renderApiKey });
-  if (!services) return;
-  const newSecrets = await readEnvFileAsync({ envFilePath });
-  if (!newSecrets) return;
-  core.info("Secrets Parsed");
-  for (let service of services) {
-    //we use this try to reduce rate-limit errors
-    await delay(1000);
-    core.info(`Updating Service: ${service.service.name}`);
-    const serviceId = service.service.id;
-    const bodyArr = await getNewBody({
-      serviceId,
-      renderApiKey,
-      newSecrets,
-      deleteAllNotInEnv,
-    });
-    if (!bodyArr) return;
-    core.info(JSON.stringify(bodyArr))
-    // await updateServiceSecretsAsync({
-    //   serviceId,
-    //   renderApiKey,
-    //   body: bodyArr,
-    // });
-    core.info(`Updated Service: ${service.service.name}`);
-  }
+  // if (!services) return;
+  // const newSecrets = await readEnvFileAsync({ envFilePath });
+  // if (!newSecrets) return;
+  // core.info("Secrets Parsed");
+  // for (let service of services) {
+  //   //we use this try to reduce rate-limit errors
+  //   await delay(1000);
+  //   core.info(`Updating Service: ${service.service.name}`);
+  //   const serviceId = service.service.id;
+  //   const bodyArr = await getNewBody({
+  //     serviceId,
+  //     renderApiKey,
+  //     newSecrets,
+  //     deleteAllNotInEnv,
+  //   });
+  //   if (!bodyArr) return;
+  //   core.info(JSON.stringify(bodyArr))
+  //   // await updateServiceSecretsAsync({
+  //   //   serviceId,
+  //   //   renderApiKey,
+  //   //   body: bodyArr,
+  //   // });
+  //   core.info(`Updated Service: ${service.service.name}`);
+  // }
 };
 main();

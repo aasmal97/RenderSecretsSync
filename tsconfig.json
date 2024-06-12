@@ -11,5 +11,10 @@
       "*": ["node_modules/*"]
     }
   },
+  "include": [
+    "scripts/**/*",
+    "action/**/*",
+    "utils/**/*",
+  ],
   "exclude": ["node_modules", "**/*.spec.ts", "dist"]
 }
