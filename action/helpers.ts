@@ -8,6 +8,7 @@ import {
   UpdateServiceSecretsParams,
 } from "./types";
 import * as core from "@actions/core";
+import { AxiosError } from "axios";
 import * as dotenv from "dotenv";
 import * as fs from "fs/promises";
 export const asyncHandler = <T, A>(params: A, func: (e: A) => Promise<T>) => {
@@ -107,7 +108,7 @@ export const updateServiceSecrets = async ({
   body,
 }: UpdateServiceSecretsParams) => {
   const client = axiosClient(renderApiKey);
-  const secrets = await client.put(`/services/${serviceId}/env-vars`, body, {
+  const secrets = await client.put(`/services/${serviceId}/env-vars`, {
     data: body,
   });
   return secrets.data as RenderSecretGetObject[];
@@ -115,3 +116,22 @@ export const updateServiceSecrets = async ({
 export const updateServiceSecretsAsync = async (
   e: UpdateServiceSecretsParams
 ) => await asyncHandler(e, updateServiceSecrets);
+export const triggerDeploy = async ({
+  renderApiKey,
+  serviceId,
+}: {
+  renderApiKey: string;
+  serviceId: string;
+}) => {
+  try {
+    const client = axiosClient(renderApiKey);
+    await client.post(`/services/${serviceId}/deploys`);
+  } catch (err: unknown) {
+    // we dont throw an error because
+    // users can choose to not trigger a deploy
+    // but sometimes resource can be busy due to render
+    // service currently deploying due to on-click integration
+    const castErr = err as AxiosError;
+    core.info(`Render: ${castErr.message}`);
+  }
+};

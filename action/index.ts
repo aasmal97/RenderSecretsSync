@@ -4,6 +4,7 @@ import {
   getServiceAsync,
   readEnvFileAsync,
   retrieveAllSecretsAsync,
+  triggerDeploy,
   updateServiceSecretsAsync,
 } from "./helpers";
 import { z } from "zod";
@@ -33,6 +34,22 @@ export const ActionSchema = z.object({
       if (typeof val === "string") return val === "true";
       return false;
     }),
+  delayDeployAfterSecrets: z
+    .string()
+    .or(z.number())
+    .default(0)
+    .transform((val) => {
+      if (typeof val === "string") return parseInt(val);
+      return Math.round(val);
+    })
+    .refine(
+      (val) => {
+        return val >= 0;
+      },
+      {
+        message: "DELAY_DEPLOY_AFTER_SECRETS must be a positive number",
+      }
+    ),
 });
 const getInputs = () => {
   core.info("Getting Inputs");
@@ -40,11 +57,13 @@ const getInputs = () => {
   const renderApiKey = core.getInput("RENDER_API_KEY");
   const renderServiceName = core.getInput("RENDER_SERVICE_NAME");
   const deleteAllNotInEnv = core.getInput("DELETE_ALL_NOT_IN_ENV");
+  const delayDeployAfterSecrets = core.getInput("DELAY_DEPLOY_AFTER_SECRETS");
   const data = {
     envFilePath,
     renderApiKey,
     renderServiceName,
     deleteAllNotInEnv,
+    delayDeployAfterSecrets,
   };
   const paramsValidationResult = ActionSchema.safeParse(data);
   if (!paramsValidationResult.success) {
@@ -93,8 +112,13 @@ const getNewBody = async ({
 const main = async () => {
   const data = getInputs();
   if (data instanceof Error) return;
-  const { envFilePath, renderApiKey, renderServiceName, deleteAllNotInEnv } =
-    data;
+  const {
+    envFilePath,
+    renderApiKey,
+    renderServiceName,
+    deleteAllNotInEnv,
+    delayDeployAfterSecrets,
+  } = data;
   const services = await getServiceAsync({ renderServiceName, renderApiKey });
   if (!services) return;
   const newSecrets = await readEnvFileAsync({ envFilePath });
@@ -112,12 +136,17 @@ const main = async () => {
       deleteAllNotInEnv,
     });
     if (!bodyArr) return;
-    // await updateServiceSecretsAsync({
-    //   serviceId,
-    //   renderApiKey,
-    //   body: bodyArr,
-    // });
-    core.info(`Updated Service: ${service.service.name}`);
+    await updateServiceSecretsAsync({
+      serviceId,
+      renderApiKey,
+      body: bodyArr,
+    });
+    await delay(delayDeployAfterSecrets);
+    await triggerDeploy({
+      renderApiKey,
+      serviceId,
+    })
+    core.info(`Finished Updated Service: ${service.service.name}`);
   }
 };
 main();

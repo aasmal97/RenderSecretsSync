@@ -39,16 +39,28 @@ with:
 ### Inputs:
 
 - `ENV_FILE_PATH`: `string` _(required)_
+  
   The file path to the .env file that we will read to update render on
 
 - `RENDER_API_KEY`: `string` _(required)_
+  
   Render API key, which we will use to make requests to Render
 
 - `RENDER_SERVICE_NAME`: `string` _(required)_
+  
   Render service name, that identifies the service/s we will target, to update secrets on. This must be unique if you want to target ONE service! If you have more than one service that shares the same name, the changes will occur on ALL of them.
 
 - `DELETE_ALL_NOT_IN_ENV`: `boolean` _(optional)_
+  
   Delete all secrets not found in the .env file.
+
+- `DELAY_DEPLOY_AFTER_SECRETS`: `string | number` _(optional)_
+
+  Delay deployment by this many milliseconds after secrets have been updated. Useful when using Render's auto-deploy feature, that triggers immeaditely after a designated branch is updated. 
+   
+  This will COLLIDE with this action's attempt to update secrets. However, setting this delay, can avoid this collision on Render, since the service will not deploy on the Github Runner, until after the specified time. 
+  
+  Note: Github does have an action runner limit (6hrs) that may need to be modified, if Render deployment takes longer than this
 
 ## Limitations
 

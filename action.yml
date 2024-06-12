@@ -21,6 +21,10 @@ inputs:
     default: "false"
     description: Delete all secrets not found in the .env file.
     required: false
+  DELAY_DEPLOY_AFTER_SECRETS:
+    default: "0"
+    description: Delay deployment by this many milliseconds after secrets have been updated.
+    required: false
 runs:
   using: "node20"
   main: "dist/action/index.js"
