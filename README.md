@@ -45,7 +45,7 @@ with:
   Render API key, which we will use to make requests to Render
 
 - `RENDER_SERVICE_NAME`: `string` _(required)_
-  Render service name, that identifies the service we will target, to update secrets on. This must be unique! If you have more than one service that shares the same name, the change will occur on the first one found.
+  Render service name, that identifies the service/s we will target, to update secrets on. This must be unique if you want to target ONE service! If you have more than one service that shares the same name, the changes will occur on ALL of them.
 
 - `DELETE_ALL_NOT_IN_ENV`: `boolean` _(optional)_
   Delete all secrets not found in the .env file.
@@ -53,6 +53,8 @@ with:
 ## Limitations
 
 - The API Key must be configured on a Render account, instead of a specific Render service. This limitation is imposed by Render themselves, and therefore can't be support more granular access (i.e API Key for only a specific service).
+
+- Be aware that although we allow for ANY amount of services, to be updated with ANY number of secrets, we are limited by Render's API rate limits. We grab services matching a name, at intervals of 100, and secrets on that service, also, at intervals of 100. If you exceed these more than 5, this action will attempt to update all the services or secrets returned, but the action may throw a rate-limit error.
 
 - This action can only run in **ubuntu** environments. It is not supported in darwin or mac. This is due primarily to ubuntu being the most common environment for Github action runners, but it is also due to my lack of hardware and time. However, in the future, support can be added if it is seen as a good or necessary feature.
 
