@@ -102,20 +102,20 @@ export const retrieveAllSecrets = async (e: GetRenderServiceSecrets) => {
 };
 export const retrieveAllSecretsAsync = async (e: GetRenderServiceSecrets) =>
   await asyncHandler(e, retrieveAllSecrets);
+
 export const updateServiceSecrets = async ({
   renderApiKey,
   serviceId,
   body,
 }: UpdateServiceSecretsParams) => {
   const client = axiosClient(renderApiKey);
-  const secrets = await client.put(`/services/${serviceId}/env-vars`, {
-    data: body,
-  });
+  const secrets = await client.put(`/services/${serviceId}/env-vars`, body);
   return secrets.data as RenderSecretGetObject[];
 };
 export const updateServiceSecretsAsync = async (
   e: UpdateServiceSecretsParams
 ) => await asyncHandler(e, updateServiceSecrets);
+
 export const triggerDeploy = async ({
   renderApiKey,
   serviceId,

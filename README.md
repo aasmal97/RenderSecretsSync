@@ -29,7 +29,7 @@ This action provides a solution for this problem, by interacting with [Render's 
 
 ```yaml
 name: Render Sync Secrets
-uses: aasmal97/RenderSecretsSync@v1.0.0
+uses: aasmal97/RenderSecretsSync@v1.1.0
 with:
   ENV_FILE_PATH: "./.env"
   RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}

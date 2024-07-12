@@ -17926,12 +17926,12 @@ var require_lib = __commonJS({
             throw new Error("Client has already been disposed.");
           }
           const parsedUrl = new URL(requestUrl);
-          let info2 = this._prepareRequest(verb, parsedUrl, headers);
+          let info3 = this._prepareRequest(verb, parsedUrl, headers);
           const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb) ? this._maxRetries + 1 : 1;
           let numTries = 0;
           let response;
           do {
-            response = yield this.requestRaw(info2, data);
+            response = yield this.requestRaw(info3, data);
             if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
               let authenticationHandler;
               for (const handler of this.handlers) {
@@ -17941,7 +17941,7 @@ var require_lib = __commonJS({
                 }
               }
               if (authenticationHandler) {
-                return authenticationHandler.handleAuthentication(this, info2, data);
+                return authenticationHandler.handleAuthentication(this, info3, data);
               } else {
                 return response;
               }
@@ -17964,8 +17964,8 @@ var require_lib = __commonJS({
                   }
                 }
               }
-              info2 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-              response = yield this.requestRaw(info2, data);
+              info3 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+              response = yield this.requestRaw(info3, data);
               redirectsRemaining--;
             }
             if (!response.message.statusCode || !HttpResponseRetryCodes.includes(response.message.statusCode)) {
@@ -17994,7 +17994,7 @@ var require_lib = __commonJS({
        * @param info
        * @param data
        */
-      requestRaw(info2, data) {
+      requestRaw(info3, data) {
         return __awaiter(this, void 0, void 0, function* () {
           return new Promise((resolve, reject) => {
             function callbackForResult(err, res) {
@@ -18006,7 +18006,7 @@ var require_lib = __commonJS({
                 resolve(res);
               }
             }
-            this.requestRawWithCallback(info2, data, callbackForResult);
+            this.requestRawWithCallback(info3, data, callbackForResult);
           });
         });
       }
@@ -18016,12 +18016,12 @@ var require_lib = __commonJS({
        * @param data
        * @param onResult
        */
-      requestRawWithCallback(info2, data, onResult) {
+      requestRawWithCallback(info3, data, onResult) {
         if (typeof data === "string") {
-          if (!info2.options.headers) {
-            info2.options.headers = {};
+          if (!info3.options.headers) {
+            info3.options.headers = {};
           }
-          info2.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info3.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         function handleResult(err, res) {
@@ -18030,7 +18030,7 @@ var require_lib = __commonJS({
             onResult(err, res);
           }
         }
-        const req = info2.httpModule.request(info2.options, (msg) => {
+        const req = info3.httpModule.request(info3.options, (msg) => {
           const res = new HttpClientResponse(msg);
           handleResult(void 0, res);
         });
@@ -18042,7 +18042,7 @@ var require_lib = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error(`Request timeout: ${info2.options.path}`));
+          handleResult(new Error(`Request timeout: ${info3.options.path}`));
         });
         req.on("error", function(err) {
           handleResult(err);
@@ -18078,27 +18078,27 @@ var require_lib = __commonJS({
         return this._getProxyAgentDispatcher(parsedUrl, proxyUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info2 = {};
-        info2.parsedUrl = requestUrl;
-        const usingSsl = info2.parsedUrl.protocol === "https:";
-        info2.httpModule = usingSsl ? https2 : http2;
+        const info3 = {};
+        info3.parsedUrl = requestUrl;
+        const usingSsl = info3.parsedUrl.protocol === "https:";
+        info3.httpModule = usingSsl ? https2 : http2;
         const defaultPort = usingSsl ? 443 : 80;
-        info2.options = {};
-        info2.options.host = info2.parsedUrl.hostname;
-        info2.options.port = info2.parsedUrl.port ? parseInt(info2.parsedUrl.port) : defaultPort;
-        info2.options.path = (info2.parsedUrl.pathname || "") + (info2.parsedUrl.search || "");
-        info2.options.method = method;
-        info2.options.headers = this._mergeHeaders(headers);
+        info3.options = {};
+        info3.options.host = info3.parsedUrl.hostname;
+        info3.options.port = info3.parsedUrl.port ? parseInt(info3.parsedUrl.port) : defaultPort;
+        info3.options.path = (info3.parsedUrl.pathname || "") + (info3.parsedUrl.search || "");
+        info3.options.method = method;
+        info3.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info2.options.headers["user-agent"] = this.userAgent;
+          info3.options.headers["user-agent"] = this.userAgent;
         }
-        info2.options.agent = this._getAgent(info2.parsedUrl);
+        info3.options.agent = this._getAgent(info3.parsedUrl);
         if (this.handlers) {
           for (const handler of this.handlers) {
-            handler.prepareRequest(info2.options);
+            handler.prepareRequest(info3.options);
           }
         }
-        return info2;
+        return info3;
       }
       _mergeHeaders(headers) {
         if (this.requestOptions && this.requestOptions.headers) {
@@ -18959,10 +18959,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("notice", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
     exports2.notice = notice;
-    function info2(message) {
+    function info3(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports2.info = info2;
+    exports2.info = info3;
     function startGroup(name) {
       command_1.issue("group", name);
     }
@@ -36776,6 +36776,28 @@ var retrieveAllSecrets = async (e) => {
   return secrets;
 };
 var retrieveAllSecretsAsync = async (e) => await asyncHandler(e, retrieveAllSecrets);
+var updateServiceSecrets = async ({
+  renderApiKey,
+  serviceId,
+  body
+}) => {
+  const client = axiosClient(renderApiKey);
+  const secrets = await client.put(`/services/${serviceId}/env-vars`, body);
+  return secrets.data;
+};
+var updateServiceSecretsAsync = async (e) => await asyncHandler(e, updateServiceSecrets);
+var triggerDeploy = async ({
+  renderApiKey,
+  serviceId
+}) => {
+  try {
+    const client = axiosClient(renderApiKey);
+    await client.post(`/services/${serviceId}/deploys`);
+  } catch (err) {
+    const castErr = err;
+    core.info(`Render: ${castErr.message}`);
+  }
+};
 
 // action/index.ts
 var import_zod = __toESM(require_lib2());
@@ -36803,7 +36825,19 @@ var ActionSchema = import_zod.z.object({
     if (typeof val === "string")
       return val === "true";
     return false;
-  })
+  }),
+  delayDeployAfterSecrets: import_zod.z.string().or(import_zod.z.number()).default(0).transform((val) => {
+    if (typeof val === "string")
+      return parseInt(val);
+    return Math.round(val);
+  }).refine(
+    (val) => {
+      return val >= 0;
+    },
+    {
+      message: "DELAY_DEPLOY_AFTER_SECRETS must be a positive number"
+    }
+  )
 });
 var getInputs = () => {
   core2.info("Getting Inputs");
@@ -36811,11 +36845,13 @@ var getInputs = () => {
   const renderApiKey = core2.getInput("RENDER_API_KEY");
   const renderServiceName = core2.getInput("RENDER_SERVICE_NAME");
   const deleteAllNotInEnv = core2.getInput("DELETE_ALL_NOT_IN_ENV");
+  const delayDeployAfterSecrets = core2.getInput("DELAY_DEPLOY_AFTER_SECRETS");
   const data = {
     envFilePath,
     renderApiKey,
     renderServiceName,
-    deleteAllNotInEnv
+    deleteAllNotInEnv,
+    delayDeployAfterSecrets
   };
   const paramsValidationResult = ActionSchema.safeParse(data);
   if (!paramsValidationResult.success) {
@@ -36860,7 +36896,13 @@ var main = async () => {
   const data = getInputs();
   if (data instanceof Error)
     return;
-  const { envFilePath, renderApiKey, renderServiceName, deleteAllNotInEnv } = data;
+  const {
+    envFilePath,
+    renderApiKey,
+    renderServiceName,
+    deleteAllNotInEnv,
+    delayDeployAfterSecrets
+  } = data;
   const services = await getServiceAsync({ renderServiceName, renderApiKey });
   if (!services)
     return;
@@ -36880,8 +36922,17 @@ var main = async () => {
     });
     if (!bodyArr)
       return;
-    core2.info(JSON.stringify(bodyArr));
-    core2.info(`Updated Service: ${service.service.name}`);
+    await updateServiceSecretsAsync({
+      serviceId,
+      renderApiKey,
+      body: bodyArr
+    });
+    await delay(delayDeployAfterSecrets);
+    await triggerDeploy({
+      renderApiKey,
+      serviceId
+    });
+    core2.info(`Finished Updated Service: ${service.service.name}`);
   }
 };
 main();
