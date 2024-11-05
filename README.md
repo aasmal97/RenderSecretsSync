@@ -1,5 +1,9 @@
 # Render Secrets Sync Github Action
 
+<br/>
+<a href="https://www.buymeacoffee.com/arkyasmal" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
+
 ## Introduction
 
 Currently, [Render](https://render.com/) is a relatively new container hosting provider. As a result, support for one-click integrations with other secret managers like Hashicorp, AWS secrets store, etc, are lacking. As a result, we need a way to dynamically update/automate secrets management for Render in a Github action.
